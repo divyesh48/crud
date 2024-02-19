@@ -2,20 +2,27 @@ import React, { useState } from 'react';
 
 function App() {
   const [items, setItems] = useState([]);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [jobType, setJobType] = useState('');
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    jobType: ''
+  });
   const [editId, setEditId] = useState(null);
-  const [editFirstName, setEditFirstName] = useState('');
-  const [editLastName, setEditLastName] = useState('');
-  const [editJobType, setEditJobType] = useState('');
+  const [error, setError] = useState('');
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
 
   const addItem = () => {
+    const { firstName, lastName, jobType } = formData;
     if (firstName.trim() !== '' && lastName.trim() !== '' && jobType.trim() !== '') {
-      setItems([...items, { id: Date.now(), firstName, lastName, jobType }]);
-      setFirstName('');
-      setLastName('');
-      setJobType('');
+      setItems([...items, { id: Date.now(), ...formData }]);
+      setFormData({ firstName: '', lastName: '', jobType: '' });
+      setError('');
+    } else {
+      setError('All fields are required');
     }
   };
 
@@ -23,25 +30,21 @@ function App() {
     setItems(items.filter(item => item.id !== id));
   };
 
-  const updateItem = (id, newFirstName, newLastName, newJobType) => {
+  const updateItem = (id) => {
     const updatedItems = items.map(item => {
       if (item.id === id) {
-        return { ...item, firstName: newFirstName, lastName: newLastName, jobType: newJobType };
+        return { ...item, ...formData };
       }
       return item;
     });
     setItems(updatedItems);
     setEditId(null);
-    setEditFirstName('');
-    setEditLastName('');
-    setEditJobType('');
+    setFormData({ firstName: '', lastName: '', jobType: '' });
   };
 
   const handleEdit = (id, firstName, lastName, jobType) => {
     setEditId(id);
-    setEditFirstName(firstName);
-    setEditLastName(lastName);
-    setEditJobType(jobType);
+    setFormData({ firstName, lastName, jobType });
   };
 
   return (
@@ -52,8 +55,9 @@ function App() {
         <input
           type="text"
           id="firstName"
-          value={firstName}
-          onChange={e => setFirstName(e.target.value)}
+          name="firstName"
+          value={formData.firstName}
+          onChange={handleChange}
           placeholder="Enter first name"
         />
       </div>
@@ -62,8 +66,9 @@ function App() {
         <input
           type="text"
           id="lastName"
-          value={lastName}
-          onChange={e => setLastName(e.target.value)}
+          name="lastName"
+          value={formData.lastName}
+          onChange={handleChange}
           placeholder="Enter last name"
         />
       </div>
@@ -72,11 +77,13 @@ function App() {
         <input
           type="text"
           id="jobType"
-          value={jobType}
-          onChange={e => setJobType(e.target.value)}
+          name="jobType"
+          value={formData.jobType}
+          onChange={handleChange}
           placeholder="Enter job type"
         />
       </div>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
       <button onClick={addItem}>Add</button>
       <table>
         <thead>
@@ -96,8 +103,9 @@ function App() {
                 {editId === item.id ? (
                   <input
                     type="text"
-                    value={editFirstName}
-                    onChange={e => setEditFirstName(e.target.value)}
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    name="firstName"
                   />
                 ) : (
                   item.firstName
@@ -107,8 +115,9 @@ function App() {
                 {editId === item.id ? (
                   <input
                     type="text"
-                    value={editLastName}
-                    onChange={e => setEditLastName(e.target.value)}
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    name="lastName"
                   />
                 ) : (
                   item.lastName
@@ -118,8 +127,9 @@ function App() {
                 {editId === item.id ? (
                   <input
                     type="text"
-                    value={editJobType}
-                    onChange={e => setEditJobType(e.target.value)}
+                    value={formData.jobType}
+                    onChange={handleChange}
+                    name="jobType"
                   />
                 ) : (
                   item.jobType
@@ -127,7 +137,7 @@ function App() {
               </td>
               <td>
                 {editId === item.id ? (
-                  <button onClick={() => updateItem(item.id, editFirstName, editLastName, editJobType)}>Save</button>
+                  <button onClick={() => updateItem(item.id)}>Save</button>
                 ) : (
                   <>
                     <button onClick={() => handleEdit(item.id, item.firstName, item.lastName, item.jobType)}>Edit</button>
